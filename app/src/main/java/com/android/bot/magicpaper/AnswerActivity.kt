@@ -1,61 +1,54 @@
-package com.android.bot.magicpaper;
+package com.android.bot.magicpaper
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ImageView;
-import android.widget.Toast;
+import android.os.Bundle
+import android.view.Menu
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.android.bot.magicpaper.databinding.ActivityAnswerBinding
 
-public class AnswerActivity extends AppCompatActivity {
+class AnswerActivity : AppCompatActivity() {
 
-    ImageView imageView;
-    Animation fadeIn;
+    private lateinit var binding: ActivityAnswerBinding
+    private var fadeIn: Animation? = null
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_answer);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityAnswerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        if (getIntent() != null) {
-            int position = getIntent().getIntExtra("position", 0);
-            boolean show = getIntent().getBooleanExtra("show", false);
-            if (position < 5) {
-                Toast.makeText(this, " Are you confused? ", Toast.LENGTH_SHORT).show();
-            } else if (!show) {
-                Toast.makeText(this, " Are you confused? ", Toast.LENGTH_SHORT).show();
+        val position = intent.getIntExtra("position", 0)
+        val show = intent.getBooleanExtra("show", false)
 
-            } else {
-                int random = getIntent().getIntExtra("random", 0);
-                int[] myimg = getIntent().getIntArrayExtra("images");
-                Toast.makeText(this, " Is this your ANSWER ", Toast.LENGTH_LONG).show();
+        if (position < 5 || !show) {
+            showToast("Are you confused?", Toast.LENGTH_SHORT)
+        } else {
+            val random = intent.getIntExtra("random", 0)
+            val myImages = intent.getIntArrayExtra("images")
 
-                imageView = (ImageView) findViewById(R.id.answer);
-                imageView.setImageResource(myimg[random]);
+            showToast("Is this your answer?", Toast.LENGTH_LONG)
 
-                fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
-                imageView.setVisibility(View.VISIBLE);
-                imageView.startAnimation(fadeIn);
+            binding.answer.setImageResource(myImages?.get(random) ?: 0)
 
-            }
-
+            fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in)
+            binding.answer.visibility = View.VISIBLE
+            binding.answer.startAnimation(fadeIn)
         }
-
-
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
+   /* override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
+    fun finish(item:View) {
+        finishAffinity()
+    }*/
 
-    public void finish(MenuItem item) {
-        finishAffinity();
+    private fun showToast(message: String, duration: Int) {
+        Toast.makeText(this, message, duration).show()
     }
 }

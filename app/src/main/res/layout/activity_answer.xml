@@ -8,6 +8,7 @@
     tools:context="com.android.bot.magicpaper.AnswerActivity">
 
     <ImageView
+        android:layout_margin="20dp"
         android:id="@+id/answer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

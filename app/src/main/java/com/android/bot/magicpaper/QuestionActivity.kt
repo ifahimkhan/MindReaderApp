@@ -1,77 +1,65 @@
-package com.android.bot.magicpaper;
+package com.android.bot.magicpaper
 
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.Toast;
+import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
+import com.android.bot.magicpaper.MainActivity
+import com.android.bot.magicpaper.databinding.ActivityQuestionBinding
+import com.android.bot.magicpaper.databinding.ActivitySplashScreenBinding
 
-public class QuestionActivity extends AppCompatActivity {
+class QuestionActivity : AppCompatActivity() {
+    private lateinit var cardViews: List<CardView>
+    private lateinit var fadeAnimations: List<Animation>
+    private var doubleBackToExitPressedOnce = false
+    private lateinit var binding: ActivityQuestionBinding
 
-    CardView card1, card2, card3;
-    Animation fade1,fade2,fade3;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityQuestionBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_question);
-        card1 = (CardView) findViewById(R.id.txt2);
-        card2 = (CardView) findViewById(R.id.cardtxt3);
-        card3 = (CardView) findViewById(R.id.cardtxt4);
-        fade1 = AnimationUtils.loadAnimation(this, R.anim.left_to_right);
-        fade2 = AnimationUtils.loadAnimation(this, R.anim.left_to_right);
-        fade3 = AnimationUtils.loadAnimation(this, R.anim.left_to_right);
+        cardViews = listOf(
+            findViewById(R.id.txt2),
+            findViewById(R.id.cardtxt3),
+            findViewById(R.id.cardtxt4)
+        )
+        fadeAnimations = List(3) { AnimationUtils.loadAnimation(this, R.anim.left_to_right) }
 
-        card1.startAnimation(fade1);
-        fade2.setStartOffset(500);
-        card2.startAnimation(fade2);
-        fade3.setStartOffset(1000);
-        card3.startAnimation(fade3);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.option, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    boolean doubleBackToExitPressedOnce = false;
-
-    @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed();
-            return;
+        cardViews.forEachIndexed { index, cardView ->
+            cardView.startAnimation(fadeAnimations[index].apply { startOffset = index * 500L })
         }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce = false;
-            }
-        }, 2000);
     }
 
-    public void DoneQ(MenuItem item) {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setPositiveButton("continue", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.option, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed()
+            return
+        }
+        doubleBackToExitPressedOnce = true
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show()
+        Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
+    }
+
+    fun DoneQ(item: MenuItem?) {
+        AlertDialog.Builder(this)
+            .setMessage("Did you choose your number?")
+            .setPositiveButton("continue") { _, _ ->
+                startActivity(Intent(applicationContext, MainActivity::class.java))
             }
-        });
-        dialog.setMessage("Did you choose your number?");
-        dialog.setCancelable(true);
-        dialog.show();
+            .show()
     }
 }

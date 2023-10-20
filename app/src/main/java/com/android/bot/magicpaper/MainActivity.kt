@@ -1,123 +1,127 @@
-package com.android.bot.magicpaper;
+package com.android.bot.magicpaper
 
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.support.annotation.RequiresApi;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.content.Intent
+import android.os.Build
+import android.os.Bundle
+import android.view.View
+import android.view.animation.AnimationUtils
+import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import java.util.Random
 
-import java.util.ArrayList;
-import java.util.Random;
-
-public class MainActivity extends AppCompatActivity {
-    private static final int NUM_LIST_ITEMS = 101;
-    private GreenAdapter mAdapter;
-    private static int displayedposition = 0;
-    ArrayList<Integer> imagearry = new ArrayList<Integer>();
-    ArrayList<Boolean> booleanitemClicked = new ArrayList<>();
-
-    private RecyclerView recyclerView;
-    Random r = new Random();
-    int random = r.nextInt(12 - 0) + 0;
-    int[] images = {R.mipmap.image0, R.mipmap.image1, R.mipmap.image2, R.mipmap.image3, R.mipmap.image4, R.mipmap.image5, R.mipmap.image6
-            , R.mipmap.image7, R.mipmap.image8, R.mipmap.image9, R.mipmap.image10, R.drawable.flag};
+class MainActivity : AppCompatActivity() {
+    private lateinit var mAdapter: Adapter
+    private lateinit var recyclerView: RecyclerView
+    private val imageArray = ArrayList<Int>()
+    private val booleanItemClicked = ArrayList<Boolean>()
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Animation blink= AnimationUtils.loadAnimation(this,R.anim.blink);
-        TextView revealAnswer= (TextView) findViewById(R.id.next);
-        revealAnswer.startAnimation(blink);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        val blink = AnimationUtils.loadAnimation(this, R.anim.blink)
+        val revealAnswer = findViewById<TextView>(R.id.next)
+        revealAnswer.startAnimation(blink)
 
-        recyclerView = (RecyclerView) findViewById(R.id.listitem);
+        recyclerView = findViewById(R.id.listitem)
+        val linearLayoutManager = LinearLayoutManager(this)
+        recyclerView.layoutManager = linearLayoutManager
+        recyclerView.setHasFixedSize(true)
 
-        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setHasFixedSize(true);
-        Toast.makeText(this, "Shuffling.!!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Shuffling.!!", Toast.LENGTH_SHORT).show()
+        initializeData()
 
-        myBinding();
+        mAdapter = Adapter(applicationContext, imageArray, booleanItemClicked)
+        recyclerView.adapter = mAdapter
 
-
-        mAdapter = new GreenAdapter(getApplicationContext(), NUM_LIST_ITEMS, random,imagearry,booleanitemClicked);
-        recyclerView.setAdapter(mAdapter);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
             }
 
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                displayedposition = linearLayoutManager.findFirstVisibleItemPosition();
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                displayedPosition = linearLayoutManager.findFirstVisibleItemPosition()
             }
-        });
+        })
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    public void nextIntent(View view) {
-        boolean show=false;
-        if(!mAdapter.pastindex.isEmpty()){
-            show=true;
+    fun nextIntent(view: View?) {
+        val show = Adapter.pastIndex != 0
+        val dialog = AlertDialog.Builder(this)
+        dialog.setPositiveButton("Continue") { _, _ ->
+            startActivity(
+                Intent(
+                    applicationContext, AnswerActivity::class.java
+                ).putExtra("random", getRandomValue()).putExtra("images", images)
+                    .putExtra("position", displayedPosition)
+                    .putExtra("show", show)
+            )
         }
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        final boolean finalShow = show;
-        dialog.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                startActivity(new Intent(getApplicationContext(), AnswerActivity.class).putExtra("random", random).putExtra("images", images).putExtra("position", displayedposition).putExtra("show", finalShow));
-            }
-        });
-        dialog.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.dismiss();
-            }
-        });
-        dialog.setMessage("Did you get your Symbol?");
-        dialog.setCancelable(false);
-        dialog.show();
+        dialog.setNegativeButton("cancel") { dialog, _ -> dialog.dismiss() }
+        dialog.setMessage("Did you get your Symbol?")
+        dialog.setCancelable(false)
+        dialog.show()
     }
 
+    private fun initializeData() {
+        val r = Random()
+        val images = intArrayOf(
+            R.mipmap.image0,
+            R.mipmap.image1,
+            R.mipmap.image2,
+            R.mipmap.image3,
+            R.mipmap.image4,
+            R.mipmap.image5,
+            R.mipmap.image6,
+            R.mipmap.image7,
+            R.mipmap.image8,
+            R.mipmap.image9,
+            R.mipmap.image10,
+            R.drawable.flag
+        )
 
-    public void myBinding() {
-        for (int listIndex = 0; listIndex <= 100; listIndex++) {
-            int index = listIndex % 12;
+        for (listIndex in 0..100) {
+            val index = listIndex % 12
             if (listIndex < 9) {
-                Random r = new Random();
-                int random = r.nextInt(12 - 0) + 0;
-                imagearry.add(listIndex, images[random]);
-
+                imageArray.add(listIndex, images[r.nextInt(12)])
             } else if (listIndex % 9 == 0) {
-
-                imagearry.add(listIndex, images[random]);
-
+                imageArray.add(listIndex, images[random])
             } else {
-                imagearry.add(listIndex, images[index]);
-
+                imageArray.add(listIndex, images[index])
             }
-            booleanitemClicked.add(false);
-            booleanitemClicked.set(listIndex,false);
-
+            booleanItemClicked.add(false)
         }
     }
 
+    companion object {
+        private const val NUM_LIST_ITEMS = 101
+        private var displayedPosition = 0
+        private var random = Random().nextInt(12)
+        private var images = intArrayOf(
+            R.mipmap.image0,
+            R.mipmap.image1,
+            R.mipmap.image2,
+            R.mipmap.image3,
+            R.mipmap.image4,
+            R.mipmap.image5,
+            R.mipmap.image6,
+            R.mipmap.image7,
+            R.mipmap.image8,
+            R.mipmap.image9,
+            R.mipmap.image10,
+            R.drawable.flag
+        )
 
-
+        private fun getRandomValue(): Int {
+            return Random().nextInt(12)
+        }
+    }
 }
